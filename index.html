@@ -85,6 +85,21 @@
             color: #666;
             font-size: 14px;
         }
+        
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .loading {
+            color: #007bff;
+            margin-top: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -93,52 +108,72 @@
         <input type="text" id="zoekveld" class="zoekbalk" placeholder="Typ je zoekopdracht...">
         <ul id="suggesties-lijst" class="suggesties"></ul>
         <button id="zoek-knop" class="zoek-knop">Zoeken</button>
+        <div class="loading" id="loading">Suggesties laden...</div>
+        <div class="error" id="error"></div>
         <div class="info" id="info"></div>
     </div>
 
     <script>
-        // Zoeksuggesties uit het tekstbestand (ingeladen via een string)
-        const zoeksuggestiesData = `
-Google=https://www.google.com
-YouTube=https://www.youtube.com
-Facebook=https://www.facebook.com
-Twitter=https://twitter.com
-Instagram=https://www.instagram.com
-LinkedIn=https://www.linkedin.com
-GitHub=https://github.com
-Stack Overflow=https://stackoverflow.com
-Wikipedia=https://www.wikipedia.org
-Amazon=https://www.amazon.com
-Netflix=https://www.netflix.com
-Spotify=https://www.spotify.com
-Microsoft=https://www.microsoft.com
-Apple=https://www.apple.com
-Nu.nl=https://www.nu.nl
-NOS=https://nos.nl
-Marktplaats=https://www.marktplaats.nl
-Bol.com=https://www.bol.com
-Zalando=https://www.zalando.nl
-Buienradar=https://www.buienradar.nl
-        `;
-
         // Data structuur voor suggesties
         let suggesties = [];
         
-        // Laad suggesties uit de data
-        function laadSuggesties() {
-            const regels = zoeksuggestiesData.trim().split('\n');
-            suggesties = regels.map(regel => {
-                const [tekst, url] = regel.split('=');
-                return {
-                    tekst: tekst.trim(),
-                    url: url ? url.trim() : null
-                };
-            });
+        // Laad suggesties uit het txt bestand
+        async function laadSuggesties() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            try {
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                
+                // Haal het txt bestand op
+                const response = await fetch('zoeksuggesties.txt');
+                
+                if (!response.ok) {
+                    throw new Error(`Kan zoeksuggesties.txt niet laden (status: ${response.status})`);
+                }
+                
+                const text = await response.text();
+                const regels = text.trim().split('\n');
+                
+                suggesties = regels.map(regel => {
+                    // Negeer lege regels
+                    if (!regel.trim()) return null;
+                    
+                    // Splits op de eerste = 
+                    const eersteGelijkteken = regel.indexOf('=');
+                    
+                    if (eersteGelijkteken !== -1) {
+                        // Er staat een = in de regel
+                        const tekst = regel.substring(0, eersteGelijkteken).trim();
+                        const url = regel.substring(eersteGelijkteken + 1).trim();
+                        return {
+                            tekst: tekst,
+                            url: url || null
+                        };
+                    } else {
+                        // Geen =, alleen tekst
+                        return {
+                            tekst: regel.trim(),
+                            url: null
+                        };
+                    }
+                }).filter(s => s !== null); // Verwijder lege regels
+                
+                loading.style.display = 'none';
+                document.getElementById('info').textContent = `${suggesties.length} suggesties geladen`;
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.textContent = `Fout bij laden suggesties: ${err.message}`;
+                console.error('Fout:', err);
+            }
         }
 
         // Zoek suggesties op basis van input
         function zoekSuggesties(input) {
-            if (!input) return [];
+            if (!input || suggesties.length === 0) return [];
             input = input.toLowerCase();
             return suggesties.filter(s => 
                 s.tekst.toLowerCase().includes(input)
@@ -152,7 +187,6 @@ Buienradar=https://www.buienradar.nl
             
             if (suggestieLijst.length === 0) {
                 lijst.style.display = 'none';
-                info.textContent = '';
                 return;
             }
             
@@ -234,7 +268,7 @@ Buienradar=https://www.buienradar.nl
             
             // Toon suggesties bij focus als er tekst is
             zoekveld.addEventListener('focus', () => {
-                if (zoekveld.value) {
+                if (zoekveld.value && suggesties.length > 0) {
                     const gevondenSuggesties = zoekSuggesties(zoekveld.value);
                     toonSuggesties(gevondenSuggesties);
                 }
