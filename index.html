@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoekmachine met suggesties</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .zoek-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .zoekbalk {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        .zoekbalk:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .suggesties {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0 0 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .suggesties li {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .suggesties li:last-child {
+            border-bottom: none;
+        }
+        
+        .suggesties li:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .zoek-knop {
+            margin-top: 10px;
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .zoek-knop:hover {
+            background-color: #0056b3;
+        }
+        
+        .info {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="zoek-container">
+        <h1>🔍 Zoekmachine</h1>
+        <input type="text" id="zoekveld" class="zoekbalk" placeholder="Typ je zoekopdracht...">
+        <ul id="suggesties-lijst" class="suggesties"></ul>
+        <button id="zoek-knop" class="zoek-knop">Zoeken</button>
+        <div class="info" id="info"></div>
+    </div>
+
+    <script>
+        // Zoeksuggesties uit het tekstbestand (ingeladen via een string)
+        const zoeksuggestiesData = `
+Google=https://www.google.com
+YouTube=https://www.youtube.com
+Facebook=https://www.facebook.com
+Twitter=https://twitter.com
+Instagram=https://www.instagram.com
+LinkedIn=https://www.linkedin.com
+GitHub=https://github.com
+Stack Overflow=https://stackoverflow.com
+Wikipedia=https://www.wikipedia.org
+Amazon=https://www.amazon.com
+Netflix=https://www.netflix.com
+Spotify=https://www.spotify.com
+Microsoft=https://www.microsoft.com
+Apple=https://www.apple.com
+Nu.nl=https://www.nu.nl
+NOS=https://nos.nl
+Marktplaats=https://www.marktplaats.nl
+Bol.com=https://www.bol.com
+Zalando=https://www.zalando.nl
+Buienradar=https://www.buienradar.nl
+        `;
+
+        // Data structuur voor suggesties
+        let suggesties = [];
+        
+        // Laad suggesties uit de data
+        function laadSuggesties() {
+            const regels = zoeksuggestiesData.trim().split('\n');
+            suggesties = regels.map(regel => {
+                const [tekst, url] = regel.split('=');
+                return {
+                    tekst: tekst.trim(),
+                    url: url ? url.trim() : null
+                };
+            });
+        }
+
+        // Zoek suggesties op basis van input
+        function zoekSuggesties(input) {
+            if (!input) return [];
+            input = input.toLowerCase();
+            return suggesties.filter(s => 
+                s.tekst.toLowerCase().includes(input)
+            );
+        }
+
+        // Toon suggesties in de UI
+        function toonSuggesties(suggestieLijst) {
+            const lijst = document.getElementById('suggesties-lijst');
+            const info = document.getElementById('info');
+            
+            if (suggestieLijst.length === 0) {
+                lijst.style.display = 'none';
+                info.textContent = '';
+                return;
+            }
+            
+            lijst.innerHTML = '';
+            suggestieLijst.forEach(suggestie => {
+                const li = document.createElement('li');
+                li.textContent = suggestie.tekst + (suggestie.url ? ' →' : '');
+                li.onclick = () => selecteerSuggestie(suggestie);
+                lijst.appendChild(li);
+            });
+            
+            lijst.style.display = 'block';
+            info.textContent = `${suggestieLijst.length} suggestie(s) gevonden`;
+        }
+
+        // Verwerk geselecteerde suggestie
+        function selecteerSuggestie(suggestie) {
+            const zoekveld = document.getElementById('zoekveld');
+            zoekveld.value = suggestie.tekst;
+            
+            if (suggestie.url) {
+                window.location.href = suggestie.url;
+            } else {
+                document.getElementById('suggesties-lijst').style.display = 'none';
+                voerZoekopdrachtUit(suggestie.tekst);
+            }
+        }
+
+        // Voer zoekopdracht uit
+        function voerZoekopdrachtUit(query) {
+            if (!query) return;
+            
+            // Controleer of de query exact overeenkomt met een suggestie met URL
+            const exacteMatch = suggesties.find(s => 
+                s.tekst.toLowerCase() === query.toLowerCase() && s.url
+            );
+            
+            if (exacteMatch) {
+                window.location.href = exacteMatch.url;
+            } else {
+                // Google zoekopdracht
+                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            laadSuggesties();
+            
+            const zoekveld = document.getElementById('zoekveld');
+            const suggestiesLijst = document.getElementById('suggesties-lijst');
+            const zoekKnop = document.getElementById('zoek-knop');
+            
+            // Input event voor suggesties
+            zoekveld.addEventListener('input', (e) => {
+                const input = e.target.value;
+                const gevondenSuggesties = zoekSuggesties(input);
+                toonSuggesties(gevondenSuggesties);
+            });
+            
+            // Zoekknop click event
+            zoekKnop.addEventListener('click', () => {
+                voerZoekopdrachtUit(zoekveld.value);
+            });
+            
+            // Enter toets in zoekveld
+            zoekveld.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    voerZoekopdrachtUit(zoekveld.value);
+                }
+            });
+            
+            // Verberg suggesties bij klik buiten
+            document.addEventListener('click', (e) => {
+                if (!zoekveld.contains(e.target) && !suggestiesLijst.contains(e.target)) {
+                    suggestiesLijst.style.display = 'none';
+                }
+            });
+            
+            // Toon suggesties bij focus als er tekst is
+            zoekveld.addEventListener('focus', () => {
+                if (zoekveld.value) {
+                    const gevondenSuggesties = zoekSuggesties(zoekveld.value);
+                    toonSuggesties(gevondenSuggesties);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
