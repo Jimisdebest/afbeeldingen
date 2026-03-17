@@ -1,0 +1,2 @@
+voetbal
+chatgpt = chatgpt.com
