@@ -2,11 +2,8 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Gezichtsherkenning - Ik zie je wel!!!</title>
-    <!-- Importeer TensorFlow.js en het gezichtsherkenningsmodel -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.2/dist/face-detection.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ImageVault · Zoek & download afbeeldingen in hoge kwaliteit</title>
     <style>
         * {
             margin: 0;
@@ -15,569 +12,602 @@
         }
 
         body {
-            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', sans-serif;
-            padding: 1.5rem;
+            background: linear-gradient(145deg, #f5f7fc 0%, #eef2f8 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 2rem 1.5rem;
+            color: #1a2634;
         }
 
-        .card {
-            background: rgba(18, 25, 45, 0.75);
-            backdrop-filter: blur(12px);
-            border-radius: 3rem;
-            border: 1px solid rgba(90, 150, 255, 0.25);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(70, 130, 255, 0.1);
-            padding: 1.8rem;
-            max-width: 1000px;
-            width: 100%;
-            transition: all 0.3s ease;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header & zoekvak */
+        .hero {
+            text-align: center;
+            margin-bottom: 2.5rem;
         }
 
         h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #E0F0FF, #90c0ff);
-            -webkit-background-clip: text;
+            font-size: 2.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e3c72, #2b4c7c);
             background-clip: text;
+            -webkit-background-clip: text;
             color: transparent;
-            text-align: center;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h1::before {
+            content: "🖼️";
+            font-size: 2.4rem;
+            background: none;
+            -webkit-background-clip: unset;
+            color: #2c5a8c;
         }
 
         .sub {
-            text-align: center;
-            color: #8e9fcb;
-            margin-bottom: 1.8rem;
-            font-size: 0.9rem;
-            border-bottom: 1px dashed rgba(100, 150, 255, 0.3);
-            display: inline-block;
-            width: auto;
-            margin-left: auto;
-            margin-right: auto;
-            padding-bottom: 0.5rem;
-        }
-
-        .camera-container {
-            position: relative;
-            border-radius: 2rem;
-            overflow: hidden;
-            background: #000;
-            box-shadow: 0 20px 35px -10px black;
-            margin-bottom: 1.5rem;
-            aspect-ratio: 4 / 3;
-            width: 100%;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-            display: block;
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            pointer-events: none;
-            transform: scaleX(-1);
-        }
-
-        .info-panel {
-            background: rgba(10, 15, 30, 0.7);
-            border-radius: 1.8rem;
-            padding: 1rem 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 0.2rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .status {
-            background: #11161f;
-            padding: 0.5rem 1.2rem;
-            border-radius: 2rem;
-            font-size: 0.9rem;
+            color: #4a627a;
+            margin-top: 8px;
             font-weight: 500;
-            color: #bbd4ff;
+        }
+
+        .search-panel {
+            background: white;
+            border-radius: 60px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            justify-content: space-between;
+            max-width: 700px;
+            margin: 24px auto 10px auto;
+            padding: 6px 6px 6px 24px;
+            transition: all 0.2s;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
-        .led {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #4caf50;
-            box-shadow: 0 0 6px #4caf50;
-            animation: pulse 1.2s infinite;
+        .search-panel:focus-within {
+            box-shadow: 0 18px 32px rgba(0, 0, 0, 0.12);
+            border-color: #8bb3d4;
         }
 
-        .led.inactive {
-            background-color: #a94442;
-            box-shadow: none;
-            animation: none;
+        .search-input {
+            flex: 1;
+            border: none;
+            font-size: 1.1rem;
+            padding: 14px 0;
+            background: transparent;
+            outline: none;
+            font-weight: 500;
+            color: #1a2c3e;
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.4; transform: scale(0.9);}
-            100% { opacity: 1; transform: scale(1.2);}
+        .search-input::placeholder {
+            color: #9aaebf;
+            font-weight: 400;
         }
 
-        .age-badge {
-            background: #1e2a3a;
-            padding: 0.5rem 1.2rem;
-            border-radius: 2rem;
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-
-        .warning-text {
-            color: #ffaa66;
-            font-size: 0.8rem;
-        }
-
-        button {
-            background: #2a3a60;
+        .search-btn {
+            background: #1f6392;
             border: none;
             color: white;
-            padding: 0.5rem 1.2rem;
-            border-radius: 2rem;
+            padding: 10px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
             cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-            backdrop-filter: blur(4px);
+            transition: 0.2s;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        button:hover {
-            background: #3f4e7a;
+        .search-btn:hover {
+            background: #0e4a70;
             transform: scale(0.97);
         }
 
-        /* Popup stijl — dreigend maar stijlvol */
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(12px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            font-family: 'Segoe UI', 'Poppins', sans-serif;
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        .popup-card {
-            background: linear-gradient(145deg, #1f1c2c, #12101c);
-            border-radius: 3rem;
-            max-width: 440px;
-            width: 85%;
+        .stats {
             text-align: center;
-            padding: 2.2rem 1.5rem;
-            border: 2px solid #ff4d4d;
-            box-shadow: 0 0 40px rgba(255, 50, 50, 0.4);
-            transform: scale(1);
-            transition: 0.1s;
-            animation: popBounce 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+            font-size: 0.9rem;
+            color: #4c6a82;
+            margin-top: 12px;
+            font-weight: 500;
         }
 
-        .popup-card h2 {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #ff4d4d;
-            text-shadow: 0 0 10px #ff0000aa;
-            margin-bottom: 0.5rem;
-            letter-spacing: 2px;
+        /* foutmelding / loading */
+        .info-message {
+            background: #fff1e0;
+            border-left: 6px solid #f5a623;
+            padding: 14px 20px;
+            border-radius: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            font-weight: 500;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .popup-card p {
-            font-size: 1.3rem;
-            color: #f0c0c0;
-            margin: 1rem 0;
+        .loading {
+            background: #e3f0fa;
+            border-left-color: #2b7bb6;
         }
 
-        .popup-card button {
-            background: #ff4d4d;
-            margin-top: 1rem;
-            font-size: 1.2rem;
-            padding: 0.7rem 2rem;
-            font-weight: bold;
-            border-radius: 3rem;
-            border: none;
-            color: black;
+        /* grid met afbeeldingen */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 28px;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(0px);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255,255,255,0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .img-wrapper {
+            background: #eef2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 220px;
             cursor: pointer;
-            transition: 0.1s linear;
+            position: relative;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .popup-card button:hover {
-            background: #ff1a1a;
-            transform: scale(1.02);
-            box-shadow: 0 0 15px red;
+        .img-wrapper img {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            transition: transform 0.2s;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .card-info {
+            padding: 18px 16px 20px 16px;
+            background: #ffffff;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        @keyframes popBounce {
-            0% { transform: scale(0.7); opacity: 0; }
-            80% { transform: scale(1.05); }
-            100% { transform: scale(1); opacity: 1; }
+        .img-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a3a52;
+            word-break: break-word;
+            background: #f0f4f9;
+            padding: 6px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            align-self: flex-start;
+        }
+
+        .path-meta {
+            font-size: 0.75rem;
+            font-family: monospace;
+            color: #6585a3;
+            background: #f8fafc;
+            padding: 4px 8px;
+            border-radius: 20px;
+            word-break: break-all;
+        }
+
+        .download-btn {
+            background: #2c6e9e;
+            border: none;
+            color: white;
+            padding: 10px 0;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 6px;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .download-btn:hover {
+            background: #114e73;
+            gap: 14px;
+        }
+
+        .preview-hint {
+            font-size: 0.7rem;
+            text-align: center;
+            color: #7d9bbc;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255,255,240,0.7);
+            border-radius: 50px;
+            font-size: 1.2rem;
+            color: #4f6f8f;
         }
 
         footer {
             text-align: center;
-            font-size: 0.7rem;
-            margin-top: 1.2rem;
-            color: #5a6e96;
+            margin-top: 60px;
+            font-size: 0.8rem;
+            color: #7d99b0;
+            border-top: 1px solid #dce5ed;
+            padding-top: 30px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            .search-panel {
+                padding: 5px 5px 5px 16px;
+            }
+            .search-btn {
+                padding: 8px 18px;
+            }
+            h1 {
+                font-size: 1.9rem;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>📸 OUDERDETECTIE • CAMERA</h1>
-    <div style="text-align: center;">
-        <div class="sub">🔍 AI scant gezichten • Leeftijd > 15 jaar = POPUP</div>
+<div class="container">
+    <div class="hero">
+        <h1>AfbeeldingenMatrix</h1>
+        <div class="sub">🔍 Zoek op naam · 📥 Download in originele kwaliteit</div>
     </div>
 
-    <div class="camera-container">
-        <video id="webcam" autoplay playsinline muted></video>
-        <canvas id="overlayCanvas"></canvas>
+    <div class="search-panel">
+        <input type="text" id="searchInput" class="search-input" placeholder="Bijv: leeuw, berg, zonsondergang, kat..." autocomplete="off">
+        <button id="searchButton" class="search-btn">🔎 Zoeken</button>
     </div>
+    <div id="statsArea" class="stats"></div>
 
-    <div class="info-panel">
-        <div class="status">
-            <span id="ledIndicator" class="led"></span>
-            <span id="camStatusText">📷 Camera initialiseren...</span>
-        </div>
-        <div class="age-badge" id="ageDisplay">
-            🧠 Leeftijdsschatting: <span id="estimatedAgeValue">—</span>
-        </div>
-        <button id="resetPopupLockBtn">🔒 Reset popup-blokkade</button>
+    <div id="messageArea" class="info-message" style="display: none;"></div>
+
+    <div id="galleryContainer" class="gallery">
+        <!-- dynamische kaarten worden hier ingeladen -->
+        <div class="no-results" style="opacity: 0.7;">✨ Voer een zoekterm in of begin met bladeren<br>Afbeeldingen database wordt geladen...</div>
     </div>
-    <div class="warning-text" style="text-align:center; margin-top: 0.7rem;">
-        ⚠️ Wanneer iemand <strong>ouder dan 15 jaar</strong> wordt gedetecteerd, verschijnt er een onmiskenbare popup!
-    </div>
-    <footer>🔮 MediaPipe Face Detector + leeftijdsinschatting via gezichtskenmerken (AI-model benadering)</footer>
+    <footer>
+        ⚡ Hoge kwaliteit downloads | Bronbestanden exact zoals in afbeeldingsnamen.txt
+    </footer>
 </div>
 
 <script>
-    (function() {
-        // ----- ELEMENTEN -----
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('overlayCanvas');
-        const ctx = canvas.getContext('2d');
-        const camStatusSpan = document.getElementById('camStatusText');
-        const ledIndicator = document.getElementById('ledIndicator');
-        const estimatedAgeSpan = document.getElementById('estimatedAgeValue');
-        const resetBtn = document.getElementById('resetPopupLockBtn');
+    // ---------- GLOBALE DATA STRUCTUUR ----------
+    // We slaan alle afbeeldingen op als objecten: { name, path }
+    let masterImageList = [];       // volledige lijst
+    let filteredList = [];          // huidige gefilterde lijst op basis van zoekterm
+    let dataLoaded = false;
 
-        // ----- GLOBALE STATUS -----
-        let faceDetector = null;          // Face-detection object (MediaPipe)
-        let animationId = null;
-        let isCameraActive = false;
-        let lastPopupTime = 0;             // timestamp van laatste popup (milliseconds)
-        let popupCooldownMs = 4000;        // 4 seconden cooldown zodat niet te veel popups achter elkaar
-        let detectionActive = true;         // flag of we mogen reageren op leeftijd >15
-        
-        // ----- HULPFUNCTIES VOOR LEEFTIJDSINSCHATTING (simulatie maar realistisch gebaseerd op gezichtsverhoudingen + willekeur met bias) 
-        // We gebruiken een combinatie van bounding box verhoudingen en een deterministische "schatting"
-        // Om niet puur random te zijn maar plausibel: afhankelijk van gezichtsgrootte/positie en "face landmark" proxy
-        // Omdat we geen volwaardig leeftijdsmodel hebben, gebruiken we een realistische benadering die consistent aanvoelt
-        // De detectie geeft een "ageGuess" tussen 5 en 75 jaar.
-        // Dit zorgt voor een speels maar functioneel concept: bij meerdere detecties zal het algoritme redelijk oordeel geven.
-        
-        // Functie om een consistente maar variabele leeftijdsschatting te maken o.b.v. gezichtsregio + een hash van bounding box
-        function estimateAgeFromFace(face) {
-            // face heeft boundingBox: {xMin, yMin, width, height} relatieve of absolute waarden? 
-            // MediaPipe returned box met xMin, yMin, width, height (pixels binnen videoresolutie)
-            const box = face.box;
-            if (!box) return 22; // fallback
-            
-            const width = box.width;
-            const height = box.height;
-            const area = width * height;
-            // Gebruik de verhouding en oppervlak als proxy: kindergezichten zijn vaak kleiner in beeld (afhankelijk van afstand)
-            // Combineer met stabiliteitshash op basis van coördinaten om realistische schommeling te krijgen.
-            let rawScore = (height / (width + 0.01)) * 2.5;  // gezichtsverhouding (gemiddeld ~1.2-1.5)
-            // Normaliseer area factor: als gezicht dichtbij is, area groot -> niet per se ouder, maar we mengen 
-            let areaFactor = Math.min(1.2, area / (video.videoHeight * video.videoWidth * 0.08));
-            // Combinatie maakt jonger als gezichtje klein ver weg (maar niet te extreem)
-            let ageBase = 12 + (rawScore * 9) + (areaFactor * 12);
-            
-            // voeg wat deterministische variatie toe gebaseerd op de box-coördinaten (zodat verschillende gezichten andere scores krijgen)
-            let hashSeed = (Math.floor(box.xMin) % 37 + Math.floor(box.yMin) % 43) / 20.0;
-            let variation = (hashSeed - 0.5) * 8;
-            let estimatedAge = ageBase + variation;
-            
-            // Clamp realistische leeftijd 5 t/m 75 jaar
-            estimatedAge = Math.min(75, Math.max(5, Math.floor(estimatedAge)));
-            
-            // extra aanpassing: als gezicht erg smal/breed is (bijzondere hoeken) dan niet hoger dan 60
-            if (width / height > 1.3) estimatedAge = Math.min(estimatedAge, 58);
-            if (height / width > 1.6) estimatedAge = Math.min(estimatedAge, 65);
-            
-            return estimatedAge;
+    // DOM elementen
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchButton');
+    const galleryDiv = document.getElementById('galleryContainer');
+    const statsSpan = document.getElementById('statsArea');
+    const msgDiv = document.getElementById('messageArea');
+
+    // Helpers om berichten te tonen/verbergen
+    function showMessage(text, isError = false, isLoading = false) {
+        msgDiv.style.display = 'flex';
+        msgDiv.innerHTML = '';
+        if (isLoading) {
+            msgDiv.classList.add('loading');
+            msgDiv.classList.remove('info-message');
+            msgDiv.style.background = '#e9f2f9';
+            msgDiv.style.borderLeftColor = '#2b7bb6';
+        } else {
+            msgDiv.classList.remove('loading');
+            msgDiv.style.background = isError ? '#ffe9e6' : '#eef6e6';
+            msgDiv.style.borderLeftColor = isError ? '#e06c4e' : '#4caf50';
         }
-        
-        // ----- POPUP FUNCTIE -----
-        function showIntrusivePopup() {
-            const now = Date.now();
-            // cooldown check: niet vaker dan elke popupCooldownMs
-            if (now - lastPopupTime < popupCooldownMs) {
-                console.log("Popup onderdrukt wegens cooldown");
-                return;
+        const icon = isError ? '⚠️' : (isLoading ? '⏳' : 'ℹ️');
+        msgDiv.innerHTML = `${icon} ${text}`;
+        if (!text) msgDiv.style.display = 'none';
+    }
+
+    function hideMessage() {
+        msgDiv.style.display = 'none';
+    }
+
+    // Update statistieken en gallery weergave
+    function updateUI() {
+        if (!dataLoaded) {
+            statsSpan.innerText = '📂 Database initialiseren...';
+            return;
+        }
+
+        const total = filteredList.length;
+        const term = searchInput.value.trim();
+        if (total === 0) {
+            statsSpan.innerText = term ? `😕 Geen afbeeldingen gevonden voor “${escapeHtml(term)}”` : `📸 ${masterImageList.length} afbeeldingen beschikbaar — typ een zoekwoord`;
+        } else {
+            statsSpan.innerText = term ? `🎯 ${total} resultaten voor “${escapeHtml(term)}” (${masterImageList.length} totaal)` : `🖼️ Alle ${total} afbeeldingen weergeven`;
+        }
+        renderGallery();
+    }
+
+    // Veilige HTML escape voor namen (voorkomt XSS)
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // Afbeelding laden met fallback bij fouten (gebroken pad)
+    function setImageWithFallback(imgElement, src, imageName) {
+        imgElement.onload = () => {};
+        imgElement.onerror = () => {
+            imgElement.onerror = null;
+            imgElement.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f0f2f5"/%3E%3Ctext x="50" y="55" font-size="12" text-anchor="middle" fill="%23888"%3E⚠️ ontbreekt%3C/text%3E%3C/svg%3E';
+            imgElement.style.filter = 'grayscale(0.2)';
+            imgElement.alt = `${imageName} (bestand niet gevonden)`;
+            // Voeg een kleine tooltip toe
+            imgElement.title = `Origineel pad: ${src} bestaat niet`;
+        };
+        imgElement.src = src;
+        imgElement.alt = imageName;
+    }
+
+    // Download functie: originele afbeelding ophalen via fetch + blob (high quality)
+    async function downloadImage(url, fileName) {
+        if (!url) {
+            showMessage("⚠️ Geen geldig bestandspad om te downloaden.", true);
+            return;
+        }
+        // Toon loading kort (kan optioneel)
+        try {
+            const response = await fetch(url, { mode: 'cors' }); // relatief pad werkt lokaal ook voor cross-origin? normaal ok
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status} - bestand niet bereikbaar`);
             }
-            lastPopupTime = now;
-            
-            // Maak overlay element aan
-            const overlay = document.createElement('div');
-            overlay.className = 'popup-overlay';
-            overlay.innerHTML = `
-                <div class="popup-card">
-                    <h2>⚠️ IK ZIE JE WEL!!! ⚠️</h2>
-                    <p>👁️‍🗨️ Leeftijd > 15 jaar gedetecteerd!<br>📸 Camera heeft je gezien...</p>
-                    <button id="closePopupBtn">😈 OPGEPAST 😈</button>
+            const blob = await response.blob();
+            // Maak een tijdelijke download link
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            // Zorg voor een nette bestandsnaam op basis van originele bestandsnaam uit pad
+            let suggestedName = fileName;
+            if (!suggestedName.includes('.')) {
+                const parts = url.split('/');
+                let lastPart = parts[parts.length-1];
+                if (lastPart && lastPart.includes('.')) {
+                    suggestedName = lastPart;
+                } else {
+                    suggestedName += '.png'; // fallback extensie, maar origineel is behouden
+                }
+            }
+            a.href = blobUrl;
+            a.download = suggestedName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+            showMessage(`✅ Download gestart: ${suggestedName}`, false);
+            setTimeout(() => hideMessage(), 1800);
+        } catch (err) {
+            console.error("Download fout", err);
+            showMessage(`❌ Download mislukt voor "${fileName}": bestand niet toegankelijk of pad incorrect.`, true);
+            setTimeout(() => {
+                if (msgDiv.style.display !== 'none') hideMessage();
+            }, 3000);
+        }
+    }
+
+    // Gallery renderen op basis van filteredList
+    function renderGallery() {
+        if (!dataLoaded) {
+            galleryDiv.innerHTML = `<div class="no-results">📡 Bezig met laden van afbeeldingsnamen.txt ...</div>`;
+            return;
+        }
+
+        if (filteredList.length === 0) {
+            galleryDiv.innerHTML = `<div class="no-results">🕊️ Geen overeenkomende afbeeldingen.<br>Probeer een andere zoekterm of toon alle afbeeldingen.</div>`;
+            return;
+        }
+
+        let html = '';
+        for (let img of filteredList) {
+            const safeName = escapeHtml(img.name);
+            const rawPath = img.path;
+            // Relatief pad t.o.v. de root van de website (zelfde map als HTML) — zoals "dieren/leeuw.png"
+            const imageSrc = rawPath;
+            const downloadFileName = rawPath.split('/').pop() || `${safeName}.img`;
+
+            html += `
+                <div class="card" data-name="${safeName}" data-path="${escapeHtml(rawPath)}">
+                    <div class="img-wrapper">
+                        <img class="gallery-img" loading="lazy" data-src="${escapeHtml(imageSrc)}" alt="${safeName}" 
+                             style="cursor: pointer;" title="Klik voor preview / klik met rechts om op te slaan">
+                    </div>
+                    <div class="card-info">
+                        <span class="img-name">📛 ${safeName}</span>
+                        <span class="path-meta">📁 ${escapeHtml(rawPath.length > 50 ? rawPath.substring(0, 47) + '...' : rawPath)}</span>
+                        <button class="download-btn" data-imgname="${escapeHtml(safeName)}" data-path="${escapeHtml(rawPath)}" data-filename="${escapeHtml(downloadFileName)}">
+                            ⬇️ Download origineel
+                        </button>
+                        <div class="preview-hint">🔍 Klik op afbeelding voor grotere preview</div>
+                    </div>
                 </div>
             `;
-            document.body.appendChild(overlay);
-            
-            // Speel een subtiele piep? (geen audio autoplay restricties, maar we laten het visueel)
-            const closeBtn = overlay.querySelector('#closePopupBtn');
-            closeBtn.addEventListener('click', () => {
-                overlay.remove();
-            });
-            // Klik ook op achtergrond sluiten? voor gebruiksgemak wel, maar alleen op overlay zelf (niet op popup)
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) overlay.remove();
-            });
-            
-            // Automatisch na 6 seconden verwijderen voor het geval iemand niet klikt
-            setTimeout(() => {
-                if (overlay && overlay.parentNode) overlay.remove();
-            }, 8000);
         }
-        
-        // ----- GEZICHTSDETECTIE + LEEFTIJD + POPUP LOGICA -----
-        async function detectFacesAndAge() {
-            if (!faceDetector || !isCameraActive || !video.videoWidth || video.paused || video.ended) {
-                // nog geen video of detector klaar
-                requestAnimationFrame(loopDetection);
-                return;
+
+        galleryDiv.innerHTML = html;
+
+        // Alle img elementen voorzien van echte src + lazy load + fallback en download event listeners
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, idx) => {
+            const imgWrapper = card.querySelector('.img-wrapper');
+            const imgElement = imgWrapper.querySelector('img');
+            const originalSrc = imgElement.getAttribute('data-src');
+            if (originalSrc) {
+                setImageWithFallback(imgElement, originalSrc, card.getAttribute('data-name') || 'afbeelding');
             }
-            
-            try {
-                // Gebruik MediaPipe FaceDetector om gezichten te detecteren
-                const faces = await faceDetector.estimateFaces(video, { flipHorizontal: false });
-                
-                // Teken de overlay op canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.save();
-                ctx.scale(-1, 1);
-                ctx.translate(-canvas.width, 0);
-                
-                let oldestAgeDetected = null;   // hoogste leeftijd >15 trigger
-                let anyFaceOver15 = false;
-                let latestAge = null;
-                
-                for (const face of faces) {
-                    const box = face.box;
-                    const x = box.xMin;
-                    const y = box.yMin;
-                    const w = box.width;
-                    const h = box.height;
-                    
-                    // schat leeftijd voor dit gezicht
-                    const estimatedAge = estimateAgeFromFace(face);
-                    latestAge = estimatedAge;
-                    
-                    // Bepaal kleur op basis van leeftijd >15 (rood) of < =15 (groen)
-                    const isOver15 = estimatedAge > 15;
-                    if (isOver15) anyFaceOver15 = true;
-                    
-                    // Teken bounding box
-                    ctx.beginPath();
-                    ctx.rect(x, y, w, h);
-                    ctx.strokeStyle = isOver15 ? '#ff3366' : '#44ff66';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                    ctx.fillStyle = isOver15 ? 'rgba(255, 50, 70, 0.2)' : 'rgba(80, 255, 100, 0.2)';
-                    ctx.fillRect(x, y, w, h);
-                    
-                    // Label tekst
-                    ctx.font = 'bold 20px "Segoe UI"';
-                    ctx.shadowBlur = 0;
-                    ctx.fillStyle = isOver15 ? '#ff9999' : '#ccffcc';
-                    ctx.fillText(`👤 ${estimatedAge} jaar`, x + 8, y - 8);
-                    
-                    // Update de laatste zichtbare leeftijd in UI
-                    if (oldestAgeDetected === null || estimatedAge > oldestAgeDetected) oldestAgeDetected = estimatedAge;
-                }
-                
-                ctx.restore();
-                
-                // Update UI panel met de hoogste leeftijd van alle gezichten
-                if (faces.length > 0 && latestAge !== null) {
-                    const maxAge = Math.max(...faces.map(f => estimateAgeFromFace(f)));
-                    estimatedAgeSpan.innerText = `${maxAge} jaar`;
-                    if (maxAge > 15) {
-                        estimatedAgeSpan.style.color = "#ffaa88";
-                        estimatedAgeSpan.style.fontWeight = "bold";
-                    } else {
-                        estimatedAgeSpan.style.color = "#aaffcc";
-                    }
-                } else {
-                    estimatedAgeSpan.innerText = "—";
-                    estimatedAgeSpan.style.color = "#bbd4ff";
-                }
-                
-                // Trigger popup als er minstens 1 gezicht ouder dan 15 is EN detectionActive is true
-                if (detectionActive && anyFaceOver15) {
-                    console.log("⚠️ Gezicht >15 jaar gedetecteerd, popup oproepen!");
-                    showIntrusivePopup();
-                    // Zet een korte blokkade zodat niet elke frame opnieuw popup triggert (cooldown al in showPopup)
-                    // Maar we willen dat bij continue detectie de popup maximaal elke X seconden verschijnt.
-                    // De cooldown in showIntrusivePopup zorgt hiervoor. perfect.
-                }
-                
-                // Als er geen gezicht is, reset visuele status
-                if (faces.length === 0) {
-                    // leeftijd weergave "geen gezicht"
-                    estimatedAgeSpan.innerText = "—";
-                }
-                
-            } catch (err) {
-                console.warn("Detectie fout:", err);
-            }
-            
-            requestAnimationFrame(loopDetection);
-        }
-        
-        function loopDetection() {
-            if (isCameraActive && faceDetector) {
-                detectFacesAndAge();
-            } else {
-                // als camera uit of niet klaar, toch blijven proberen maar met lagere intensiteit
-                requestAnimationFrame(loopDetection);
-            }
-        }
-        
-        // ----- CAMERA STARTEN -----
-        async function initCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" } });
-                video.srcObject = stream;
-                await video.play();
-                isCameraActive = true;
-                camStatusSpan.innerText = "✅ Camera actief • scannen";
-                ledIndicator.classList.remove('inactive');
-                
-                // Zet canvas afmetingen gelijk aan video afmetingen zodra video metadata geladen is
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        resolve();
-                    };
+
+            // Download knop event
+            const downloadBtn = card.querySelector('.download-btn');
+            if (downloadBtn) {
+                const imgPath = downloadBtn.getAttribute('data-path');
+                const fileNameForDownload = downloadBtn.getAttribute('data-filename');
+                downloadBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    downloadImage(imgPath, fileNameForDownload);
                 });
-                // extra zekerheid
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                
-                // Start detectielus
-                if (!animationId) {
-                    animationId = requestAnimationFrame(loopDetection);
+            }
+
+            // Klik op afbeelding = grotere preview in nieuw tabblad (originele kwaliteit)
+            if (imgElement) {
+                imgElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const highResUrl = imgElement.getAttribute('data-src') || imgElement.src;
+                    if (highResUrl && !highResUrl.includes('data:image/svg')) {
+                        window.open(highResUrl, '_blank');
+                    } else {
+                        showMessage("🔍 Preview niet beschikbaar (bestand ontbreekt)", true);
+                        setTimeout(() => hideMessage(), 1200);
+                    }
+                });
+            }
+        });
+    }
+
+    // Filteren op base naam (case-insensitive, partial match)
+    function performSearch() {
+        if (!masterImageList.length) {
+            // Als data nog niet geladen is, proberen we niet te filteren
+            return;
+        }
+        const query = searchInput.value.trim().toLowerCase();
+        if (query === "") {
+            filteredList = [...masterImageList];
+        } else {
+            filteredList = masterImageList.filter(item => item.name.toLowerCase().includes(query));
+        }
+        updateUI();
+    }
+
+    // Laden van de afbeeldingsnamen.txt bestand (verwacht formaat: "naam = pad/naar/bestand.png")
+    async function loadImageIndex() {
+        showMessage("📂 Bezig met laden van afbeeldingsnamen.txt ...", false, true);
+        try {
+            const response = await fetch('afbeeldingsnamen.txt');
+            if (!response.ok) {
+                throw new Error(`Kan bestand niet laden (HTTP ${response.status}). Zorg dat afbeeldingsnamen.txt in dezelfde map staat.`);
+            }
+            const text = await response.text();
+            const lines = text.split(/\r?\n/);
+            const images = [];
+
+            for (let line of lines) {
+                line = line.trim();
+                if (line === "" || line.startsWith("#")) continue; // lege regels / comments overslaan
+
+                // Splits op de eerste '=' 
+                const equalIndex = line.indexOf('=');
+                if (equalIndex === -1) {
+                    console.warn(`Ongeldige regel (missende '='): ${line}`);
+                    continue;
                 }
-            } catch (err) {
-                console.error("Camera fout:", err);
-                camStatusSpan.innerText = "❌ Geen cameratoegang";
-                ledIndicator.classList.add('inactive');
-                isCameraActive = false;
-                alert("Kon camera niet starten. Geef toestemming voor webcam.");
+                let rawName = line.substring(0, equalIndex).trim();
+                let rawPath = line.substring(equalIndex + 1).trim();
+
+                if (rawName === "" || rawPath === "") {
+                    console.warn(`Lege naam of pad: ${line}`);
+                    continue;
+                }
+
+                // Optioneel: als pad geen extensie heeft, melding maar toch accepteren
+                images.push({
+                    name: rawName,
+                    path: rawPath
+                });
             }
-        }
-        
-        // ----- INITIALISEER GEZICHTSDETECTOR (MediaPipe via tfjs-models/face-detection) -----
-        async function setupFaceDetector() {
-            // Gebruik de MediaPipe backend voor snelle detectie in de browser
-            const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
-            const detectorConfig = {
-                runtime: 'tfjs',
-                maxFaces: 5,
-                refineLandmarks: false,  // sneller
-                detectorModelUrl: undefined // standaard
-            };
-            try {
-                faceDetector = await faceDetection.createDetector(model, detectorConfig);
-                console.log("Gezichtsdetector geladen (MediaPipe)");
-            } catch(e) {
-                console.error("Fout bij laden detector", e);
-                camStatusSpan.innerText = "⚠️ Model laadfout";
+
+            if (images.length === 0) {
+                throw new Error("Geen geldige afbeeldingen gevonden in afbeeldingsnamen.txt. Controleer formaat: 'naam = pad/afbeelding.png'");
             }
+
+            masterImageList = images;
+            filteredList = [...masterImageList]; // initieel toon alles
+            dataLoaded = true;
+            hideMessage();
+            updateUI();
+            showMessage(`✔️ Succes: ${masterImageList.length} afbeeldingen geladen uit index.`, false);
+            setTimeout(() => hideMessage(), 2500);
+        } catch (err) {
+            console.error(err);
+            dataLoaded = false;
+            showMessage(`Fout bij laden index: ${err.message}. Controleer of afbeeldingsnamen.txt in de root staat.`, true);
+            galleryDiv.innerHTML = `<div class="no-results" style="background:#fff0ed;">❌ Database niet bereikbaar:<br>${escapeHtml(err.message)}<br><br>📄 Voorbeeld regel in afbeeldingsnamen.txt:<br>"leeuw = dieren/leeuw.png"</div>`;
+            statsSpan.innerText = '⚠️ Indexbestand ontbreekt of ongeldig';
         }
-        
-        // reset popup lock: activeer de popup functionaliteit opnieuw en reset cooldown timer zodat volgende detectie meteen kan.
-        function resetPopupLock() {
-            detectionActive = true;
-            // zet lastPopupTime naar een oud moment zodat cooldown geen invloed heeft
-            lastPopupTime = 0;
-            // visuele feedback
-            const originalBtnText = resetBtn.innerText;
-            resetBtn.innerText = "✅ Ontgrendeld!";
-            setTimeout(() => {
-                resetBtn.innerText = originalBtnText;
-            }, 1200);
-            console.log("Popup blokkade gereset, cooldown verwijderd.");
-        }
-        
-        // Eventueel voor de zekerheid als gebruiker popups wil blijven zien ondanks eerdere, biedt de reset knop
-        // Ook kunnen we een functie om detectionActive te resetten, deze staat altijd aan. resetPopupLock werkt als cooldown reset.
-        
-        // voeg reset event toe
-        resetBtn.addEventListener('click', () => {
-            resetPopupLock();
+    }
+
+    // Event listeners
+    function bindEvents() {
+        searchBtn.addEventListener('click', () => {
+            performSearch();
         });
-        
-        // ---- INIT ALLES ----
-        async function main() {
-            await setupFaceDetector();
-            await initCamera();
-            // Als de detector later nog niet volledig gereed is, de loopDetection wacht totdat faceDetector beschikbaar is
-        }
-        
-        main().catch(err => {
-            console.error("Initialisatie mislukt", err);
-            camStatusSpan.innerText = "⚠️ Fout bij opstarten";
-        });
-        
-        // Optioneel: cleanup bij tab sluiten (geen leaks)
-        window.addEventListener('beforeunload', () => {
-            if (video && video.srcObject) {
-                const tracks = video.srcObject.getTracks();
-                tracks.forEach(track => track.stop());
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
             }
-            if (animationId) cancelAnimationFrame(animationId);
         });
-    })();
+        // Optioneel: "wis zoekterm" met escape? leuk maar niet noodzakelijk.
+        // Als de gebruiker de zoekbalk leegmaakt en op enter drukt krijgt hij alles
+    }
+
+    // Initialiseer app
+    function init() {
+        bindEvents();
+        loadImageIndex();
+        // Extra: als er later opnieuw geklikt wordt, blijft alles consistent
+    }
+
+    init();
 </script>
 </body>
 </html>
