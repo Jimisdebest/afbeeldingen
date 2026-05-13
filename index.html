@@ -282,13 +282,13 @@
 
 <div class="container">
     <div class="hero">
-        <h1>AfbeeldingenMatrix</h1>
-        <div class="sub">🔍 Zoek op naam · 📥 Download in originele kwaliteit</div>
+        <h1>ImageVault</h1>
+        <div class="sub">Download hoge kwaliteit afbeeldingen</div>
     </div>
 
     <div class="search-panel">
-        <input type="text" id="searchInput" class="search-input" placeholder="Bijv: leeuw, berg, zonsondergang, kat..." autocomplete="off">
-        <button id="searchButton" class="search-btn">🔎 Zoeken</button>
+        <input type="text" id="searchInput" class="search-input" placeholder="Zoek afbeeldingen" autocomplete="off">
+        <button id="searchButton" class="search-btn">Zoek</button>
     </div>
     <div id="statsArea" class="stats"></div>
 
@@ -298,9 +298,6 @@
         <!-- dynamische kaarten worden hier ingeladen -->
         <div class="no-results" style="opacity: 0.7;">✨ Voer een zoekterm in of begin met bladeren<br>Afbeeldingen database wordt geladen...</div>
     </div>
-    <footer>
-        ⚡ Hoge kwaliteit downloads | Bronbestanden exact zoals in afbeeldingsnamen.txt
-    </footer>
 </div>
 
 <script>
@@ -343,7 +340,7 @@
     // Update statistieken en gallery weergave
     function updateUI() {
         if (!dataLoaded) {
-            statsSpan.innerText = '📂 Database initialiseren...';
+            statsSpan.innerText = 'Database initialiseren...';
             return;
         }
 
@@ -352,7 +349,7 @@
         if (total === 0) {
             statsSpan.innerText = term ? `😕 Geen afbeeldingen gevonden voor “${escapeHtml(term)}”` : `📸 ${masterImageList.length} afbeeldingen beschikbaar — typ een zoekwoord`;
         } else {
-            statsSpan.innerText = term ? `🎯 ${total} resultaten voor “${escapeHtml(term)}” (${masterImageList.length} totaal)` : `🖼️ Alle ${total} afbeeldingen weergeven`;
+            statsSpan.innerText = term ? `🎯 ${total} resultaten voor “${escapeHtml(term)}”)` : `Alle ${total} afbeeldingen weergeven`;
         }
         renderGallery();
     }
@@ -418,11 +415,11 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(blobUrl);
-            showMessage(`✅ Download gestart: ${suggestedName}`, false);
+            showMessage(`Download gestart: ${suggestedName}`, false);
             setTimeout(() => hideMessage(), 1800);
         } catch (err) {
             console.error("Download fout", err);
-            showMessage(`❌ Download mislukt voor "${fileName}": bestand niet toegankelijk of pad incorrect.`, true);
+            showMessage(`Download mislukt voor "${fileName}": bestand niet toegankelijk of pad incorrect.`, true);
             setTimeout(() => {
                 if (msgDiv.style.display !== 'none') hideMessage();
             }, 3000);
@@ -432,12 +429,12 @@
     // Gallery renderen op basis van filteredList
     function renderGallery() {
         if (!dataLoaded) {
-            galleryDiv.innerHTML = `<div class="no-results">📡 Bezig met laden van afbeeldingsnamen.txt ...</div>`;
+            galleryDiv.innerHTML = `<div class="no-results">Bezig met laden van afbeeldingsnamen...</div>`;
             return;
         }
 
         if (filteredList.length === 0) {
-            galleryDiv.innerHTML = `<div class="no-results">🕊️ Geen overeenkomende afbeeldingen.<br>Probeer een andere zoekterm of toon alle afbeeldingen.</div>`;
+            galleryDiv.innerHTML = `<div class="no-results">Geen overeenkomende afbeeldingen.<br>Probeer een andere zoekterm.</div>`;
             return;
         }
 
@@ -456,12 +453,12 @@
                              style="cursor: pointer;" title="Klik voor preview / klik met rechts om op te slaan">
                     </div>
                     <div class="card-info">
-                        <span class="img-name">📛 ${safeName}</span>
-                        <span class="path-meta">📁 ${escapeHtml(rawPath.length > 50 ? rawPath.substring(0, 47) + '...' : rawPath)}</span>
+                        <span class="img-name">${safeName}</span>
+                        <span class="path-meta">${escapeHtml(rawPath.length > 50 ? rawPath.substring(0, 47) + '...' : rawPath)}</span>
                         <button class="download-btn" data-imgname="${escapeHtml(safeName)}" data-path="${escapeHtml(rawPath)}" data-filename="${escapeHtml(downloadFileName)}">
-                            ⬇️ Download origineel
+                            Download origineel
                         </button>
-                        <div class="preview-hint">🔍 Klik op afbeelding voor grotere preview</div>
+                        <div class="preview-hint">Klik op afbeelding voor grotere preview</div>
                     </div>
                 </div>
             `;
@@ -498,7 +495,7 @@
                     if (highResUrl && !highResUrl.includes('data:image/svg')) {
                         window.open(highResUrl, '_blank');
                     } else {
-                        showMessage("🔍 Preview niet beschikbaar (bestand ontbreekt)", true);
+                        showMessage("Preview niet beschikbaar (bestand ontbreekt)", true);
                         setTimeout(() => hideMessage(), 1200);
                     }
                 });
@@ -523,7 +520,7 @@
 
     // Laden van de afbeeldingsnamen.txt bestand (verwacht formaat: "naam = pad/naar/bestand.png")
     async function loadImageIndex() {
-        showMessage("📂 Bezig met laden van afbeeldingsnamen.txt ...", false, true);
+        showMessage("Bezig met laden van afbeeldingen...", false, true);
         try {
             const response = await fetch('afbeeldingsnamen.txt');
             if (!response.ok) {
@@ -567,14 +564,14 @@
             dataLoaded = true;
             hideMessage();
             updateUI();
-            showMessage(`✔️ Succes: ${masterImageList.length} afbeeldingen geladen uit index.`, false);
+            showMessage(`Succes: ${masterImageList.length} afbeeldingen geladen uit index.`, false);
             setTimeout(() => hideMessage(), 2500);
         } catch (err) {
             console.error(err);
             dataLoaded = false;
             showMessage(`Fout bij laden index: ${err.message}. Controleer of afbeeldingsnamen.txt in de root staat.`, true);
-            galleryDiv.innerHTML = `<div class="no-results" style="background:#fff0ed;">❌ Database niet bereikbaar:<br>${escapeHtml(err.message)}<br><br>📄 Voorbeeld regel in afbeeldingsnamen.txt:<br>"leeuw = dieren/leeuw.png"</div>`;
-            statsSpan.innerText = '⚠️ Indexbestand ontbreekt of ongeldig';
+            galleryDiv.innerHTML = `<div class="no-results" style="background:#fff0ed;">Database niet bereikbaar:<br>${escapeHtml(err.message)}<br><br>📄 Voorbeeld regel in afbeeldingsnamen.txt:<br>"leeuw = dieren/leeuw.png"</div>`;
+            statsSpan.innerText = 'Indexbestand ontbreekt of ongeldig';
         }
     }
 
@@ -588,15 +585,12 @@
                 performSearch();
             }
         });
-        // Optioneel: "wis zoekterm" met escape? leuk maar niet noodzakelijk.
-        // Als de gebruiker de zoekbalk leegmaakt en op enter drukt krijgt hij alles
     }
 
     // Initialiseer app
     function init() {
         bindEvents();
         loadImageIndex();
-        // Extra: als er later opnieuw geklikt wordt, blijft alles consistent
     }
 
     init();
