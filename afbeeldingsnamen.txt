@@ -1,1 +1,2 @@
 achtergrond = achtergrond.png
+Mac OS Logo = macoslogo.png
