@@ -1,4 +1,4 @@
-achtergrond = achtergrond.png
+Natuurachtergrond = achtergrond.png
 Mac OS Logo = macoslogo.jpg
 Jaipur (India) van boven = jaipurvanboven.jpg
 Ganges (India) van boven = gangesvanboven.jpg
