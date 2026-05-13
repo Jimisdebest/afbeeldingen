@@ -1,2 +1,3 @@
 achtergrond = achtergrond.png
 Mac OS Logo = macoslogo.jpg
+Jaipur (India) van boven = jaipurvanboven.jpg
