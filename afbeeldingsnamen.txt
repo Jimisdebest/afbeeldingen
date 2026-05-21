@@ -5,3 +5,5 @@ Ganges (India) van boven = gangesvanboven.jpg
 Hotel Urban Chant = hotelurbanchant.jpg
 Hamunam (India) = hamunam.jpg
 Computer = computer.png
+Appel = appel.png
+Apple Logo = applelogo.png
