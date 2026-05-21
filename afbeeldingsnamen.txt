@@ -7,3 +7,4 @@ Hamunam (India) = hamunam.jpg
 Computer = computer.png
 Appel = appel.png
 Apple Logo = applelogo.png
+Batterijstatus = batterijstatussen.png
