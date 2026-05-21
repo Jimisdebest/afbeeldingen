@@ -4,3 +4,4 @@ Jaipur (India) van boven = jaipurvanboven.jpg
 Ganges (India) van boven = gangesvanboven.jpg
 Hotel Urban Chant = hotelurbanchant.jpg
 Hamunam (India) = hamunam.jpg
+Computer = computer.png
