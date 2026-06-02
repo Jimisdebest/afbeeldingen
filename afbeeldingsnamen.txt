@@ -8,3 +8,5 @@ Computer = computer.png
 Appel = appel.png
 Apple Logo = applelogo.png
 Batterijstatus = batterijstatussen.png
+Monstera = Monstera.png
+Monstera bladeren = Monstera-bladeren.png
