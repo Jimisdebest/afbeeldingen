@@ -10,3 +10,5 @@ Apple Logo = applelogo.png
 Batterijstatus = batterijstatussen.png
 Monstera = Monstera.png
 Monstera bladeren = Monstera-bladeren.png
+Natuurachtergrond = Natuurachtergrond.png
+Natuurachtergrond met bedankt tekst = Natuurachtergrond-met-bedankt-tekst.png
