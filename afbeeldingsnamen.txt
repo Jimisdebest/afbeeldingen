@@ -32,3 +32,7 @@ Opa met stok = opametstok.png
 Opa zonder stok = opazonderstok.png
 Opa blij = opablij.png
 Opa heel blij = opaheelblij
+Canva Business = Canva Business.png
+Canva Pro = Canva Pro.png
+PostNL Logo = PostNL-Logo.png
+Microsoft Logo = Microsoft-Logo.png
